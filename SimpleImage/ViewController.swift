@@ -85,6 +85,49 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         return true
     }
     
+    //save memes
+    @IBAction func save() {
+        self.navigationController?.setNavigationBarHidden(true, animated: true)
+        self.navigationController?.setToolbarHidden(true, animated: true)
+        self.setToolbarItems([], animated: true)
+        var memedImage = generateMemedImage()
+        var meme = Meme()
+        meme.topText = self.topText.text
+        meme.bottomText = self.bottomText.text
+        meme.memedImage = memedImage
+        
+        (UIApplication.sharedApplication().delegate as! AppDelegate).memes.append(meme)
+        println("SAVED a meme")
+        var myView = UIImageView(image: meme.memedImage)
+        let vc = UIViewController()
+        vc.view.addSubview(myView)
+        //self.presentViewController(vc, animated: true, completion: nil)
+        //return meme.memedImage
+    }
+    
+    @IBAction func shareMeme(sender: AnyObject) {
+        var memedImage = generateMemedImage()
+        var activityController = UIActivityViewController(activityItems: [memedImage], applicationActivities: nil)
+        activityController.completionHandler = {(activityType, completed: Bool) in
+            self.save()
+            if !completed {
+                println("cancelled")
+                self.dismissViewControllerAnimated(true, completion: nil)
+            }
+            self.dismissViewControllerAnimated(true, completion: nil)
+
+        }
+        self.presentViewController(activityController, animated: true, completion: nil)
+    }
+    //generate the combined image
+    func generateMemedImage() -> UIImage {
+        UIGraphicsBeginImageContext(self.view.frame.size)
+        self.view.drawViewHierarchyInRect(self.view.frame, afterScreenUpdates: true)
+        let memedImage: UIImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return memedImage
+    }
+    
     func getKeyboardHeight(notification: NSNotification) -> CGFloat {
         let userInfo = notification.userInfo
         let keyboardSize = userInfo![UIKeyboardFrameEndUserInfoKey] as! NSValue
